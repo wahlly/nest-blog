@@ -5,6 +5,7 @@ import { User } from "src/schemas/user.schema";
 import { CreateUserDto } from "./dto/CreateUser.dto";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
 import { UserSettings } from "src/schemas/userSettings.schema";
+import { JwtService } from "@nestjs/jwt";
 
 
 @Injectable()
@@ -12,6 +13,7 @@ export class UsersService {
       constructor(
             @InjectModel(User.name) private userModel: Model<User>,
             @InjectModel(UserSettings.name) private userSettingsModel: Model<UserSettings>,
+            private jwtService: JwtService
       ) {}
 
       async createUser({ settings, ...createUserDto }: CreateUserDto) {
@@ -40,5 +42,19 @@ export class UsersService {
 
       deleteUser(id: string) {
             return this.userModel.findByIdAndDelete(id)
+      }
+
+      async userSignIn(username: string, password: string): Promise<any> {
+            const user = await this.userModel.findOne({ username })
+            if(!user) {
+                  throw new Error("Username/password is incorrect")
+            }
+
+            //compare password
+
+            const payload = {id: user._id, email: user.username}
+            const token = await this.jwtService.signAsync(payload)
+
+            return {token}
       }
 }
