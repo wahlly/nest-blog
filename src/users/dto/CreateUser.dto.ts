@@ -23,7 +23,21 @@ export class CreateUserDto {
       @IsOptional()
       displayName?: string;
 
+      @IsString()
+      @IsNotEmpty()
+      password: string
+
       @IsOptional()
       @ValidateNested()
       settings?: CreateUserSettingsDto
+}
+
+export class signInUserDto {
+      @IsNotEmpty()
+      @IsString()
+      username: string
+
+      @IsString()
+      @IsNotEmpty()
+      password: string
 }

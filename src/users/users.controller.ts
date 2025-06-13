@@ -1,14 +1,16 @@
-import {Body, Controller, Delete, Get, HttpException, Param, Patch, Post, UsePipes, ValidationPipe} from "@nestjs/common"
+import {Body, Controller, Delete, Get, HttpException, Param, Patch, Post, UseGuards, UsePipes, ValidationPipe} from "@nestjs/common"
 import { UsersService } from "./users.service";
-import { CreateUserDto } from "./dto/CreateUser.dto";
+import { CreateUserDto, signInUserDto } from "./dto/CreateUser.dto";
 import mongoose from "mongoose";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
+import { Public } from "./users.auth.guard";
 
-@Controller("users")
+@Controller("user")
 export class UsersController {
       constructor(private userService: UsersService) {}
 
-      @Post()
+      @Public()
+      @Post("register")
       @UsePipes(new ValidationPipe())
       createUser(@Body() createUserdto: CreateUserDto) {
             console.log(createUserdto)
@@ -53,5 +55,12 @@ export class UsersController {
             if(!deletedUser) throw new HttpException("User not found", 404)
 
             return deletedUser
+      }
+
+      @Public()
+      @Post("login")
+      @UsePipes(new ValidationPipe())
+      userSignIn(@Body() data: signInUserDto) {
+            return this.userService.userSignIn(data.username, data.password)
       }
 }

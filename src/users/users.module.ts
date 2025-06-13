@@ -5,6 +5,8 @@ import { UsersService } from "./users.service";
 import { UsersController } from "./users.controller";
 import { UserSettings, UserSettingsSchema } from "src/schemas/userSettings.schema";
 import { JwtModule } from "@nestjs/jwt";
+import { APP_GUARD } from "@nestjs/core";
+import { AuthGuard } from "./users.auth.guard";
 
 @Module({
       imports: [
@@ -20,11 +22,14 @@ import { JwtModule } from "@nestjs/jwt";
             ]),
             JwtModule.register({
                   global: true,
-                  secret: process.env.JWT_SECRET
-            }),
-            signOptions: {expiresIn: 180}
+                  secret: process.env.JWT_SECRET,
+                  signOptions: {expiresIn: 180}
+            })
       ],
-      providers: [UsersService],
+      providers: [
+            UsersService,
+            {provide: APP_GUARD, useClass: AuthGuard} // set authentication as global by default
+      ],
       controllers: [UsersController]
 })
 
