@@ -6,6 +6,7 @@ import { CreateUserDto } from "./dto/CreateUser.dto";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
 import { UserSettings } from "src/schemas/userSettings.schema";
 import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcrypt"
 
 
 @Injectable()
@@ -17,14 +18,15 @@ export class UsersService {
       ) {}
 
       async createUser({ settings, ...createUserDto }: CreateUserDto) {
+            const hash = await bcrypt.hash(createUserDto.password, 10)
             if(settings) {
                   let newSettings = new this.userSettingsModel(settings)
                   newSettings = await newSettings.save()
-                  const newUser = new this.userModel({...createUserDto, settings: newSettings._id});
+                  const newUser = new this.userModel({...createUserDto, password: hash, settings: newSettings._id});
                   return newUser.save();
             }
 
-            const newUser = new this.userModel({...createUserDto});
+            const newUser = new this.userModel({...createUserDto, password: hash});
             return newUser.save();
       }
 
@@ -51,6 +53,10 @@ export class UsersService {
             }
 
             //compare password
+            const passwordMatch = await bcrypt.compare(password, user.password)
+            if(!passwordMatch) {
+                  throw new Error("Username/password is incorrect")
+            }
 
             const payload = {id: user._id, email: user.username}
             const token = await this.jwtService.signAsync(payload)

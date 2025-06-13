@@ -11,6 +11,8 @@ export class User {
 
       displayName?: string;
 
+      password: string;
+
       avatarUrl?: string;
 
       @Prop({ type: mongoose.Schema.Types.ObjectId, ref: "UserSettings" })
